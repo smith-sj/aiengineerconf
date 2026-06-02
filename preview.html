@@ -1,0 +1,1272 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI Engineer Melbourne — Wednesday planner</title>
+  <style>
+    :root {
+      --bg: #0d0f14;
+      --panel: #151924;
+      --panel-2: #1d2330;
+      --card: #222a39;
+      --muted: #99a3b5;
+      --text: #eef3fb;
+      --line: rgba(255,255,255,.12);
+      --selected: #7ee787;
+      --selected-bg: rgba(126, 231, 135, .12);
+      --conflict: #ffbd66;
+      --ai: #89ddff;
+      --swe: #c792ea;
+      --leadership: #ffcb6b;
+      --hallway: #82aaff;
+      --shared: #a6accd;
+      --danger: #ff6b6b;
+      --shadow: 0 18px 60px rgba(0,0,0,.35);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(137,221,255,.16), transparent 32rem),
+        radial-gradient(circle at 80% 10%, rgba(199,146,234,.14), transparent 26rem),
+        linear-gradient(180deg, #0d0f14, #0a0c11 45%, #090b10);
+      min-height: 100vh;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(18px);
+      background: rgba(13, 15, 20, .82);
+      border-bottom: 1px solid var(--line);
+    }
+
+    .topbar {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 1rem;
+      align-items: center;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.8vw, 2.2rem);
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: .35rem 0 0;
+      color: var(--muted);
+      font-size: .95rem;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: .5rem;
+    }
+
+    button, .button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #111722;
+      color: var(--text);
+      border-radius: 999px;
+      padding: .6rem .85rem;
+      font-weight: 650;
+      cursor: pointer;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+      text-decoration: none;
+      font-size: .9rem;
+    }
+
+    button:hover, .button:hover {
+      background: #1d2533;
+      border-color: rgba(255,255,255,.22);
+      transform: translateY(-1px);
+    }
+
+    button.primary {
+      background: linear-gradient(135deg, rgba(126,231,135,.18), rgba(137,221,255,.18));
+      border-color: rgba(126,231,135,.5);
+    }
+
+    main {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 1rem 1.25rem 4rem;
+    }
+
+    .viewbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin: 0;
+    }
+
+    .tabs {
+      display: flex;
+      gap: .5rem;
+      margin: 0 0 1rem;
+      padding: .35rem;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(18, 22, 31, .62);
+      width: max-content;
+      max-width: 100%;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+
+    .tab {
+      border-radius: 999px;
+      background: transparent;
+      border-color: transparent;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .tab:hover {
+      transform: none;
+    }
+
+    .tab.active {
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(126,231,135,.16), rgba(137,221,255,.14));
+      border-color: rgba(126,231,135,.42);
+    }
+
+    .tab-panel[hidden] {
+      display: none;
+    }
+
+    .plan-layout {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 1rem;
+      align-items: start;
+      max-width: none;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: .45rem;
+      margin: 0;
+    }
+
+    .chip {
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255,255,255,.04);
+      padding: .35rem .55rem;
+      border-radius: 999px;
+      font-size: .78rem;
+      font-weight: 700;
+    }
+
+    .chip.ai { color: var(--ai); border-color: rgba(137,221,255,.28); }
+    .chip.swe { color: var(--swe); border-color: rgba(199,146,234,.28); }
+    .chip.leadership { color: var(--leadership); border-color: rgba(255,203,107,.28); }
+    .chip.hallway { color: var(--hallway); border-color: rgba(130,170,255,.28); }
+
+    .grid-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(12, 15, 22, .62);
+      box-shadow: var(--shadow);
+    }
+
+    .schedule {
+      min-width: 980px;
+      display: grid;
+      grid-template-columns: 92px repeat(4, minmax(190px, 1fr));
+    }
+
+    .heading {
+      position: static;
+      background: rgba(18, 22, 31, .96);
+      border-bottom: 1px solid var(--line);
+      padding: .8rem .75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      font-size: .72rem;
+      font-weight: 850;
+    }
+
+    .heading:not(:first-child) { border-left: 1px solid var(--line); }
+
+    .row-time {
+      border-top: 1px solid var(--line);
+      padding: .85rem .75rem;
+      color: #d7deea;
+      font-weight: 900;
+      background: rgba(255,255,255,.025);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .slot {
+      min-height: 104px;
+      border-top: 1px solid var(--line);
+      border-left: 1px solid var(--line);
+      padding: .55rem;
+      display: flex;
+    }
+
+    .empty { opacity: .42; }
+
+    .event {
+      position: relative;
+      width: 100%;
+      min-height: 90px;
+      padding: .8rem .8rem .75rem;
+      border-radius: .85rem;
+      border: 1px solid rgba(255,255,255,.1);
+      background: var(--card);
+      text-align: left;
+      color: var(--text);
+      cursor: pointer;
+      box-shadow: 0 10px 24px rgba(0,0,0,.18);
+      user-select: none;
+    }
+
+    .event:hover {
+      border-color: rgba(255,255,255,.24);
+      background: #283247;
+      transform: none;
+    }
+
+    .event.selected {
+      border-color: var(--selected);
+      background: linear-gradient(180deg, var(--selected-bg), rgba(255,255,255,.04));
+      box-shadow: 0 0 0 2px rgba(126,231,135,.18), 0 14px 34px rgba(0,0,0,.28);
+    }
+
+    .event.conflicting {
+      border-color: rgba(255,189,102,.8);
+      box-shadow: 0 0 0 2px rgba(255,189,102,.14), 0 14px 34px rgba(0,0,0,.28);
+    }
+
+    .event.faded:not(.selected) { opacity: .52; }
+
+    .event.shared {
+      background: rgba(255,255,255,.055);
+    }
+
+    .meta {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: .6rem;
+      margin-bottom: .45rem;
+      padding-right: 2rem;
+      color: var(--muted);
+      font-size: .75rem;
+      font-weight: 800;
+    }
+
+    .track-dot {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+    }
+
+    .track-dot::before {
+      content: "";
+      width: .55rem;
+      height: .55rem;
+      border-radius: 999px;
+      background: var(--shared);
+      box-shadow: 0 0 0 4px rgba(166,172,205,.09);
+    }
+
+    .event[data-track="AI Engineering"] .track-dot::before { background: var(--ai); box-shadow: 0 0 0 4px rgba(137,221,255,.1); }
+    .event[data-track="Software Engineering"] .track-dot::before { background: var(--swe); box-shadow: 0 0 0 4px rgba(199,146,234,.11); }
+    .event[data-track="Leadership"] .track-dot::before { background: var(--leadership); box-shadow: 0 0 0 4px rgba(255,203,107,.1); }
+    .event[data-track="Hallway"] .track-dot::before { background: var(--hallway); box-shadow: 0 0 0 4px rgba(130,170,255,.1); }
+
+    .title {
+      font-size: .98rem;
+      line-height: 1.17;
+      font-weight: 900;
+      letter-spacing: -.02em;
+      margin-bottom: .45rem;
+    }
+
+    .speaker, .location, .why {
+      color: var(--muted);
+      font-size: .82rem;
+      line-height: 1.35;
+      margin-top: .32rem;
+    }
+
+    .why {
+      display: none;
+      color: #c7f9cc;
+      margin-top: .55rem;
+      border-top: 1px dashed rgba(126,231,135,.25);
+      padding-top: .55rem;
+    }
+
+    .selected .why { display: block; }
+
+    .tick {
+      display: none;
+      position: absolute;
+      right: .65rem;
+      bottom: .55rem;
+      color: var(--selected);
+      font-size: .8rem;
+      font-weight: 950;
+    }
+
+    .selected .tick { display: block; }
+
+    .details-btn {
+      position: absolute;
+      top: .55rem;
+      right: .55rem;
+      display: inline-grid;
+      place-items: center;
+      width: 1.7rem;
+      height: 1.7rem;
+      padding: 0;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.14);
+      background: rgba(0,0,0,.22);
+      color: var(--muted);
+      font-size: .82rem;
+      font-weight: 950;
+      line-height: 1;
+      z-index: 2;
+    }
+
+    .details-btn:hover {
+      color: var(--text);
+      background: rgba(255,255,255,.1);
+      transform: none;
+    }
+
+    .selected .details-btn {
+      color: var(--selected);
+      border-color: rgba(126,231,135,.34);
+    }
+
+    .plan-layout aside {
+      display: grid;
+      gap: 1rem;
+    }
+
+    .summary, .notes {
+      border: 1px solid var(--line);
+      border-radius: 1rem;
+      background: rgba(18, 22, 31, .78);
+      box-shadow: var(--shadow);
+      padding: 1rem;
+    }
+
+    .summary h2, .notes h2 {
+      margin: 0 0 .65rem;
+      font-size: 1.05rem;
+      letter-spacing: -.02em;
+    }
+
+    .summary-list {
+      display: grid;
+      gap: .52rem;
+      max-height: none;
+      overflow: visible;
+      padding-right: 0;
+    }
+
+    .summary-item {
+      position: relative;
+      border: 1px solid rgba(255,255,255,.08);
+      background: rgba(255,255,255,.04);
+      border-radius: .75rem;
+      padding: .62rem 3rem .62rem .7rem;
+    }
+
+    .summary-item .details-btn {
+      top: .55rem;
+      right: .6rem;
+    }
+
+    .summary-time {
+      color: var(--muted);
+      font-size: .74rem;
+      font-weight: 850;
+      margin-bottom: .24rem;
+    }
+
+    .summary-title { font-weight: 850; line-height: 1.22; }
+    .summary-sub { color: var(--muted); font-size: .78rem; margin-top: .25rem; }
+
+    .conflicts {
+      display: none;
+      border: 1px solid rgba(255,189,102,.35);
+      background: rgba(255,189,102,.1);
+      color: #ffe0ad;
+      border-radius: .8rem;
+      padding: .7rem;
+      margin-bottom: .7rem;
+      font-size: .84rem;
+      line-height: 1.35;
+    }
+
+    .conflicts.show { display: block; }
+
+    .notes p, .notes li {
+      color: var(--muted);
+      font-size: .87rem;
+      line-height: 1.45;
+    }
+
+    .notes ul { padding-left: 1.2rem; margin: .6rem 0 0; }
+
+    .source {
+      color: var(--muted);
+      font-size: .74rem;
+      margin-top: .7rem;
+      line-height: 1.35;
+    }
+
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      z-index: 60;
+      display: grid;
+      place-items: center;
+      padding: 1rem;
+      background: rgba(0,0,0,.68);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-backdrop[hidden] {
+      display: none;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      max-height: min(82vh, 820px);
+      overflow: auto;
+      border: 1px solid rgba(255,255,255,.16);
+      border-radius: 1.1rem;
+      background: linear-gradient(180deg, rgba(29,35,48,.98), rgba(18,22,31,.98));
+      box-shadow: 0 28px 90px rgba(0,0,0,.55);
+    }
+
+    .modal-header {
+      position: sticky;
+      top: 0;
+      z-index: 1;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 1rem 1rem .75rem;
+      border-bottom: 1px solid var(--line);
+      background: rgba(18,22,31,.96);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-kicker {
+      color: var(--muted);
+      font-size: .76rem;
+      font-weight: 850;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: .35rem;
+    }
+
+    .modal-title {
+      margin: 0;
+      font-size: clamp(1.15rem, 3vw, 1.6rem);
+      line-height: 1.12;
+      letter-spacing: -.035em;
+    }
+
+    .modal-close {
+      flex: 0 0 auto;
+      width: 2.1rem;
+      height: 2.1rem;
+      padding: 0;
+      display: inline-grid;
+      place-items: center;
+      border-radius: 999px;
+      font-size: 1.15rem;
+    }
+
+    .modal-body {
+      padding: 1rem;
+    }
+
+    .modal-meta {
+      display: grid;
+      gap: .45rem;
+      margin-bottom: .9rem;
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.35;
+    }
+
+    .modal-description {
+      color: #dce6f7;
+      font-size: .98rem;
+      line-height: 1.58;
+      white-space: pre-wrap;
+    }
+
+    .modal-why {
+      margin-top: 1rem;
+      padding: .8rem;
+      border: 1px solid rgba(126,231,135,.2);
+      border-radius: .85rem;
+      background: rgba(126,231,135,.08);
+      color: #c7f9cc;
+      line-height: 1.45;
+      font-size: .9rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1rem;
+    }
+
+    @media (max-width: 1100px) {
+      .plan-layout { grid-template-columns: 1fr; }
+      .topbar { grid-template-columns: 1fr; }
+      .actions { justify-content: flex-start; }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        background:
+          radial-gradient(circle at top left, rgba(137,221,255,.14), transparent 20rem),
+          linear-gradient(180deg, #0d0f14, #090b10);
+      }
+
+      header {
+        position: static;
+      }
+
+      .topbar {
+        padding: .9rem .85rem;
+      }
+
+      h1 {
+        font-size: 1.25rem;
+        line-height: 1.05;
+      }
+
+      .subtitle {
+        font-size: .86rem;
+      }
+
+      .actions {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: .45rem;
+      }
+
+      .actions button {
+        width: 100%;
+        padding: .62rem .55rem;
+        font-size: .78rem;
+      }
+
+      main {
+        padding: .75rem .75rem 2.5rem;
+      }
+
+      .viewbar {
+        position: sticky;
+        top: 0;
+        z-index: 15;
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: .5rem;
+        margin-bottom: .85rem;
+        padding: .35rem 0 .55rem;
+        backdrop-filter: blur(14px);
+        background: rgba(13, 15, 20, .9);
+      }
+
+      .tabs {
+        width: 100%;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        border-radius: 1rem;
+      }
+
+      .tab {
+        width: 100%;
+        padding: .7rem .55rem;
+        font-size: .82rem;
+      }
+
+      .legend {
+        width: 100%;
+        justify-content: flex-end;
+        flex-wrap: nowrap;
+        gap: .35rem;
+        overflow-x: auto;
+        padding-bottom: .05rem;
+      }
+
+      .chip {
+        flex: 0 0 auto;
+        font-size: .7rem;
+        padding: .3rem .48rem;
+      }
+
+      .grid-wrap {
+        overflow: visible;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+      }
+
+      .schedule {
+        min-width: 0;
+        display: block;
+      }
+
+      .heading {
+        display: none;
+      }
+
+      .row-time {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        margin: 1rem 0 .45rem;
+        padding: .45rem .65rem;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        background: rgba(13, 15, 20, .94);
+        width: max-content;
+        box-shadow: 0 8px 24px rgba(0,0,0,.22);
+      }
+
+      .slot {
+        display: block;
+        min-height: 0;
+        padding: 0;
+        margin: 0 0 .55rem;
+        border: 0;
+      }
+
+      .slot.empty {
+        display: none;
+      }
+
+      .slot::before {
+        content: attr(data-label);
+        display: block;
+        margin: 0 0 .28rem .1rem;
+        color: var(--muted);
+        text-transform: uppercase;
+        letter-spacing: .08em;
+        font-size: .66rem;
+        font-weight: 900;
+      }
+
+      .event {
+        min-height: 0;
+        border-radius: .9rem;
+        padding: .78rem .78rem .72rem;
+      }
+
+      .event.faded:not(.selected) {
+        opacity: .6;
+      }
+
+      .meta {
+        align-items: flex-start;
+        font-size: .7rem;
+        padding-right: 2rem;
+      }
+
+      .title {
+        font-size: .96rem;
+      }
+
+      .speaker, .location, .why {
+        font-size: .8rem;
+      }
+
+      .summary, .notes {
+        padding: .85rem;
+      }
+
+      .modal-backdrop {
+        padding: .55rem;
+        align-items: end;
+      }
+
+      .modal {
+        max-height: 86vh;
+        border-radius: 1rem 1rem .6rem .6rem;
+      }
+
+      .modal-header,
+      .modal-body {
+        padding-left: .85rem;
+        padding-right: .85rem;
+      }
+
+      .summary-list {
+        max-height: none;
+      }
+    }
+
+    @media print {
+      body { background: white; color: black; }
+      header, .viewbar, .legend, .actions, .notes, .tabs, #choosePanel { display: none !important; }
+      main { display: block; padding: 0; }
+      #planPanel { display: block !important; }
+      .grid-wrap { display: none; }
+      .plan-layout { display: block; max-width: none; }
+      .summary { box-shadow: none; border: none; color: black; background: white; }
+      .summary-list { max-height: none; }
+      .summary-item { break-inside: avoid; color: black; background: white; border-color: #ddd; }
+      .summary-time, .summary-sub { color: #555; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div>
+        <h1>AI Engineer Melbourne — Wednesday planner</h1>
+        <p class="subtitle">Click a card to select it. Click it again to unselect. Use the info button for the full session description.</p>
+      </div>
+      <div class="actions">
+        <button id="recommended" class="primary">Reset to AI-heavy picks</button>
+        <button id="clear">Clear choices</button>
+        <button id="copy">Copy plan</button>
+        <button id="print">Print / save PDF</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="viewbar">
+      <nav class="tabs" role="tablist" aria-label="Planner views">
+        <button class="tab active" id="chooseTab" type="button" role="tab" aria-selected="true" aria-controls="choosePanel">Choose sessions</button>
+        <button class="tab" id="planTab" type="button" role="tab" aria-selected="false" aria-controls="planPanel">Selected plan</button>
+      </nav>
+
+      <div class="legend" aria-label="Track legend">
+        <span class="chip ai">AI Engineering</span>
+        <span class="chip swe">Software Engineering</span>
+        <span class="chip leadership">Leadership</span>
+        <span class="chip hallway">Hallway</span>
+        <span class="chip">Shared / social</span>
+      </div>
+    </div>
+
+    <section id="choosePanel" class="tab-panel active" role="tabpanel" aria-labelledby="chooseTab">
+      <div class="grid-wrap">
+        <div class="schedule" id="schedule" aria-label="Selectable conference schedule grid">
+          <div class="heading">Time</div>
+          <div class="heading">AI Engineering</div>
+          <div class="heading">Software Engineering</div>
+          <div class="heading">Leadership</div>
+          <div class="heading">Hallway / Shared</div>
+        </div>
+      </div>
+    </section>
+
+    <section id="planPanel" class="tab-panel" role="tabpanel" aria-labelledby="planTab" hidden>
+      <div class="plan-layout">
+        <div class="summary">
+          <h2>Your selected plan</h2>
+          <div class="conflicts" id="conflicts"></div>
+          <div class="summary-list" id="summaryList"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="detailsModal" hidden>
+    <article class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-header">
+        <div>
+          <div class="modal-kicker" id="modalKicker"></div>
+          <h2 class="modal-title" id="modalTitle"></h2>
+        </div>
+        <button class="modal-close" id="modalClose" type="button" aria-label="Close details">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-meta" id="modalMeta"></div>
+        <div class="modal-description" id="modalDescription"></div>
+        <div class="modal-why" id="modalWhy" hidden></div>
+        <div class="modal-actions">
+          <button id="modalSelect" class="primary" type="button">Select this session</button>
+          <button id="modalUnselect" type="button">Unselect</button>
+        </div>
+      </div>
+    </article>
+  </div>
+
+
+  <script>
+    const columns = ["AI Engineering", "Software Engineering", "Leadership", "Hallway"];
+    const storageKey = "ai-engineer-melbourne-wed-planner-v1";
+
+    const events = [
+      { id: "0800-registration", time: "08:00", end: "09:30", track: "Shared", title: "Registration", speaker: "", location: "Zinc, Federation Square", row: "08:00", shared: true, recommended: true, why: "Arrive early, coffee, register, and do the vendor/hallway pass before the programme starts." },
+      { id: "0930-welcome", time: "09:30", end: "09:35", track: "Shared", title: "Welcome", speaker: "John Allsopp", location: "Cinema 1", row: "09:30", shared: true, recommended: true },
+      { id: "0935-opening", time: "09:35", end: "09:40", track: "Shared", title: "Opening Words", speaker: "Ashling James", location: "Cinema 1", row: "09:35", shared: true, recommended: true },
+      { id: "0940-model-landscape", time: "09:40", end: "10:00", track: "Shared", title: "State of the AI Model Landscape", speaker: "George Cameron", location: "Cinema 1", row: "09:40", shared: true, recommended: true, why: "Baseline for model trade-offs: intelligence, speed, price, token usage." },
+      { id: "1000-token-town", time: "10:00", end: "10:20", track: "Shared", title: "Token Town (why compute strategy is product strategy)", speaker: "Sarah Sachs", location: "Cinema 1", row: "10:00", shared: true, recommended: true, why: "Useful for production AI economics: cost per task, retries, output length, model churn." },
+      { id: "1020-factory", time: "10:20", end: "10:40", track: "Shared", title: "Everything Is a Factory", speaker: "Geoff Huntley", location: "Cinema 1", row: "10:20", shared: true, recommended: true },
+      { id: "1040-forgets", time: "10:40", end: "11:00", track: "Shared", title: "Why Your Coding Agent Forgets Everything", speaker: "Igor Costa", location: "Cinema 1", row: "10:40", shared: true, recommended: true, why: "Directly relevant to agent memory and long-running coding-agent state." },
+      { id: "1100-rust-sdk", time: "11:00", end: "11:20", track: "Shared", title: "Three Lanes Below One Millisecond: A Rust SDK for Gemini Live", speaker: "Vamsi Ramakrishnan", location: "Cinema 1", row: "11:00", shared: true, recommended: true, why: "Low-latency voice agents expose engineering constraints text agents can hide." },
+      { id: "1120-outro", time: "11:20", end: "11:30", track: "Shared", title: "Keynote outro", speaker: "John Allsopp", location: "Cinema 1", row: "11:20", shared: true, recommended: true },
+      { id: "1130-lunch", time: "11:30", end: "12:30", track: "Shared", title: "Lunch", speaker: "", location: "Zinc & Cameo, ACMI", row: "11:30", shared: true, recommended: true },
+
+      { id: "1145-adk", time: "11:45", end: "12:05", track: "Hallway", title: "Build long running AI agents that pause resume and never lose context with ADK", speaker: "Nakul Gowdra", location: "Gandel Digital Future Lab", row: "11:45", recommended: true, why: "Persistence, resumability, context survival: exactly agent-system territory." },
+      { id: "1210-hamsters", time: "12:10", end: "12:30", track: "Hallway", title: "AI Hamsters: Circling Your Way to Success", speaker: "Muhammad Ali", location: "Gandel Digital Future Lab", row: "12:10", recommended: true, why: "Good eval/iteration framing before the agent talks begin." },
+
+      { id: "1230-eval", time: "12:30", end: "12:48", track: "AI Engineering", title: "Evaluation Precedes Evolution: Rubrics as the Load-Bearing Infrastructure of Self-Improving Agents", speaker: "Tanya Dixit", location: "Cinema 1", row: "12:30", recommended: true, why: "Highest-priority pick: self-improving agents without evaluation rubrics are not production systems." },
+      { id: "1230-faster-models", time: "12:30", end: "12:48", track: "Software Engineering", title: "Fail fast, fix faster: Why faster AI models beat smarter ones", speaker: "AJ Fisher", location: "Cinema 2", row: "12:30", why: "Useful for coding-agent economics and latency trade-offs." },
+      { id: "1230-governance", time: "12:30", end: "12:55", track: "Leadership", title: "Beyond Silicon Valley: Building AI Governance on the Fair Go Principle", speaker: "Aubrey Blanche", location: "Swinburne Studio", row: "12:30" },
+      { id: "1240-guardrails", time: "12:40", end: "12:50", track: "Hallway", title: "Optimising GenAI at Runtime with Experimentation and Guardrails", speaker: "Aaron Montana", location: "Gandel Digital Future Lab", row: "12:40" },
+
+      { id: "1250-forgetful", time: "12:50", end: "13:08", track: "AI Engineering", title: "Beyond Forgetful Bots: Architectural Patterns for Persistent, Proactive Claw-Style AI Agents", speaker: "Navan Tirupathi", location: "Cinema 1", row: "12:50", recommended: true, why: "Persistent and proactive agent architecture. Core to what you said you care about." },
+      { id: "1250-frameworks", time: "12:50", end: "13:08", track: "Software Engineering", title: "Building Frameworks Building Systems", speaker: "Ally Macdonald", location: "Cinema 2", row: "12:50" },
+      { id: "1300-governance-agentic", time: "13:00", end: "13:25", track: "Leadership", title: "Stop Blocking, Start Building: Rethinking Governance for the Agentic Era", speaker: "Hamish Songsmith", location: "Swinburne Studio", row: "13:00" },
+
+      { id: "1310-notion", time: "13:10", end: "13:28", track: "AI Engineering", title: "Shipping Sandboxed Workers for Notion Agents", speaker: "Adam Hudson", location: "Cinema 1", row: "13:10", recommended: true, why: "Practical agent tool/runtime architecture: sandboxing, code execution, internal APIs." },
+      { id: "1310-tools-difference", time: "13:10", end: "13:28", track: "Software Engineering", title: "Why AI coding tools might not make the slightest difference", speaker: "Jason Cornwall", location: "Cinema 2", row: "13:10" },
+      { id: "1310-market", time: "13:10", end: "13:20", track: "Hallway", title: "The State of the AI Engineering Job Market in Australia", speaker: "Jake Maloney", location: "Gandel Digital Future Lab", row: "13:10" },
+      { id: "1325-lora", time: "13:25", end: "13:35", track: "Hallway", title: "Who Needs a LoRA?", speaker: "Charli Posner", location: "Gandel Digital Future Lab", row: "13:25" },
+
+      { id: "1330-loop", time: "13:30", end: "13:48", track: "AI Engineering", title: "Close your agentic loop", speaker: "Moss Ebeling", location: "Cinema 1", row: "13:30", recommended: true, why: "Feedback loops, automated checks, and production behaviour. Stronger than generic coding-agent prompting here." },
+      { id: "1330-constitutional", time: "13:30", end: "13:48", track: "Software Engineering", title: "Constitutional Prompting: Making AI Coding Agents Reliable Without the Iteration Tax", speaker: "Prem Pillai", location: "Cinema 2", row: "13:30", why: "The strongest SWE alternative in this block." },
+      { id: "1330-privacy", time: "13:30", end: "13:55", track: "Leadership", title: "Having your cake and eating it: An implementation guide for privacy with AI", speaker: "Nick Lothian", location: "Swinburne Studio", row: "13:30" },
+      { id: "1340-cheap", time: "13:40", end: "13:50", track: "Hallway", title: "Don't Be Cheap: AI and the Appearance of Engineering", speaker: "Birger Halfmeier", location: "Gandel Digital Future Lab", row: "13:40" },
+
+      { id: "1350-many-agents", time: "13:50", end: "14:08", track: "AI Engineering", title: "How Many Agents Are Too Many? The Hidden Cost of Multi-Agent Systems", speaker: "Anannya Roy Chowdhury", location: "Cinema 1", row: "13:50", recommended: true, why: "Multi-agent systems are easy to overdo; this should help separate architecture from hype." },
+      { id: "1350-zero-production", time: "13:50", end: "14:08", track: "Software Engineering", title: "From Zero to Production: How 15 Engineers Shipped a Production LLM Product with AI Coding Tools", speaker: "Michael Zhang", location: "Cinema 2", row: "13:50" },
+      { id: "1355-no-code", time: "13:55", end: "14:05", track: "Hallway", title: "The Software Engineer Who Don't Code", speaker: "Yasith Fernando", location: "Gandel Digital Future Lab", row: "13:55" },
+      { id: "1400-ethics-panel", time: "14:00", end: "14:25", track: "Leadership", title: "Panel: Governance & Ethics", speaker: "Andrew Murphy, Aubrey Blanche, Hamish Songsmith, Nick Lothian", location: "Swinburne Studio", row: "14:00" },
+
+      { id: "1410-god-agent", time: "14:10", end: "14:28", track: "AI Engineering", title: "Kill the God Agent", speaker: "Adesh Gairola", location: "Cinema 1", row: "14:10", recommended: true, why: "Important security architecture: privileged orchestrators, injection blast radius, tool boundaries." },
+      { id: "1410-bandits", time: "14:10", end: "14:28", track: "Software Engineering", title: "Multi-Armed Bandits: The Scientific Shotgun for Evals", speaker: "Ron Au", location: "Cinema 2", row: "14:10" },
+      { id: "1410-fired", time: "14:10", end: "14:20", track: "Hallway", title: "How to Get Fired as an AI Engineer", speaker: "Kanish Gosain", location: "Gandel Digital Future Lab", row: "14:10" },
+      { id: "1425-dating", time: "14:25", end: "14:35", track: "Hallway", title: "The Red Flags of Vibe Coding a Dating app", speaker: "Karina Pamamull", location: "Gandel Digital Future Lab", row: "14:25" },
+
+      { id: "1430-break", time: "14:30", end: "15:30", track: "Shared", title: "Afternoon break", speaker: "", location: "Zinc & Cameo, ACMI", row: "14:30", shared: true, recommended: true },
+      { id: "1440-fast-agent", time: "14:40", end: "15:00", track: "Hallway", title: "One Tool to Rule them all: Building a Fast AI Agent for Real-Time Response", speaker: "Ryan Samarakoon", location: "Gandel Digital Future Lab", row: "14:40", recommended: true, why: "Worth doing during the break: latency and real-time response constraints for agents." },
+
+      { id: "1530-observability", time: "15:30", end: "15:48", track: "AI Engineering", title: "Agent Observability: Monitoring and Understanding Agents at Internet Scale", speaker: "Daniel Nadasi", location: "Cinema 1", row: "15:30", recommended: true, why: "Non-negotiable for production agents: understanding autonomous behaviour at scale." },
+      { id: "1530-agentic-web", time: "15:30", end: "15:48", track: "Software Engineering", title: "Engineering for the Agentic Web When 50% of Your Traffic is Robots", speaker: "Janna Malikova", location: "Cinema 2", row: "15:30" },
+      { id: "1530-compliance", time: "15:30", end: "15:55", track: "Leadership", title: "Regulatory AI: Building Intelligent Compliance into Financial Operating Systems", speaker: "Theo Adis", location: "Swinburne Studio", row: "15:30" },
+      { id: "1540-capacity", time: "15:40", end: "15:50", track: "Hallway", title: "Everyone Wants AI Capacity Now. Few Are Actually Running It.", speaker: "Daniel Apps", location: "Gandel Digital Future Lab", row: "15:40" },
+
+      { id: "1550-hallucinated", time: "15:50", end: "16:08", track: "AI Engineering", title: "Our AI Hallucinated in Production: How We Fixed It With Evals", speaker: "Yicheng Guo", location: "Cinema 1", row: "15:50", why: "Strong alternative if you want another production evals case study." },
+      { id: "1550-control-plane", time: "15:50", end: "16:08", track: "Software Engineering", title: "The AI Control Plane: When Your Infrastructure Becomes the Context Window", speaker: "Bojan Zivic", location: "Cinema 2", row: "15:50", recommended: true, why: "The SWE/infra pick I would not miss: infra as queryable context for agents." },
+      { id: "1600-19cabs", time: "16:00", end: "16:25", track: "Leadership", title: "19Cabs: 1115 drivers, 500 customers, 90 days from idea — and why we still had to stop and rethink AI", speaker: "Balram Singh", location: "Swinburne Studio", row: "16:00" },
+
+      { id: "1610-app-layer", time: "16:10", end: "16:28", track: "AI Engineering", title: "The Application Layer Is the New Research Lab", speaker: "Abdul Karim", location: "Cinema 1", row: "16:10", recommended: true, why: "Agentic systems as products: model calls, judges, tools, and harnesses." },
+      { id: "1610-infra-data", time: "16:10", end: "16:28", track: "Software Engineering", title: "Treating Infrastructure as Data: Building an AI-Native Control Plane", speaker: "Jeffrey Aven", location: "Cinema 2", row: "16:10", why: "Good alternative if the control-plane topic is more useful than app-layer architecture." },
+      { id: "1610-contract", time: "16:10", end: "16:20", track: "Hallway", title: "The Agentic Contract: A practical framework from enterprises shipping agents to production", speaker: "Matt Doughty", location: "Gandel Digital Future Lab", row: "16:10" },
+      { id: "1625-desktop", time: "16:25", end: "16:35", track: "Hallway", title: "Democratizing Frontier LLMs - Cloud-cluster scale intelligence running on any Desktop PC", speaker: "Obadiah Pewee", location: "Gandel Digital Future Lab", row: "16:25" },
+
+      { id: "1630-model-matching", time: "16:30", end: "16:48", track: "AI Engineering", title: "Orbital Lasers vs For Loops: Economically Matching Models to Tasks", speaker: "Stephen Sennett", location: "Cinema 1", row: "16:30", why: "Good if cost/model-routing is more pressing than agent API design." },
+      { id: "1630-apis", time: "16:30", end: "16:48", track: "Software Engineering", title: "Your Agent Doesn't Like Your APIs", speaker: "Mike Chambers", location: "Cinema 2", row: "16:30", recommended: true, why: "Crucial SWE pick: tool/API shape matters a lot for agent reliability." },
+      { id: "1630-safe-experiment", time: "16:30", end: "16:55", track: "Leadership", title: "Enabling Safe AI Experimentation for Non-Technical Founders", speaker: "Inga Pflaumer", location: "Swinburne Studio", row: "16:30" },
+      { id: "1640-code-trust", time: "16:40", end: "16:50", track: "Hallway", title: "Code Trust and Verification for the AI Era", speaker: "Andre Kolodochka", location: "Gandel Digital Future Lab", row: "16:40" },
+
+      { id: "1650-cant-engineer", time: "16:50", end: "17:08", track: "AI Engineering", title: "Your AI Can’t Engineer (Yet)", speaker: "Theodoros Galanos", location: "Cinema 1", row: "16:50" },
+      { id: "1650-self-healing", time: "16:50", end: "17:08", track: "Software Engineering", title: "Agentic Self-Healing in Production", speaker: "Jack McNicol", location: "Cinema 2", row: "16:50", recommended: true, why: "Operationally useful: monitoring, diagnosis, repair loops, production recovery." },
+      { id: "1700-case-panel", time: "17:00", end: "17:25", track: "Leadership", title: "Panel: Case Studies", speaker: "AJ Fisher, Theo Adis, Balram Singh, Inga Pflaumer", location: "Swinburne Studio", row: "17:00" },
+      { id: "1705-games", time: "17:05", end: "17:15", track: "Hallway", title: "Vibe-coded Multiplayer Video Games", speaker: "Dr Sam Donegan", location: "Gandel Digital Future Lab", row: "17:05" },
+
+      { id: "1710-flue", time: "17:10", end: "17:28", track: "AI Engineering", title: "Flue: The Agent Harness Framework, at Cloudflare", speaker: "Michael Hart", location: "Cinema 1", row: "17:10", recommended: true, why: "Best closing pick for general agent harness architecture." },
+      { id: "1710-canva", time: "17:10", end: "17:28", track: "Software Engineering", title: "How Canva built an Agentic Support Experience using Langfuse Observability", speaker: "Sergey Iakovlev & Sahil Bahl", location: "Cinema 2", row: "17:10", why: "Strong alternative if support workflows and Langfuse observability are your priority." },
+      { id: "1730-reception", time: "17:30", end: "19:30", track: "Shared", title: "Reception", speaker: "", location: "Zinc", row: "17:30", shared: true, recommended: true, why: "Ask people what actually broke in production." }
+    ];
+
+    const rowOrder = Array.from(new Set(events.map(e => e.row)));
+    const eventById = Object.fromEntries(events.map(e => [e.id, e]));
+    let selections = loadSelections();
+
+    function minutes(t) {
+      const [h, m] = t.split(":").map(Number);
+      return h * 60 + m;
+    }
+
+    function loadSelections() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(storageKey) || "null");
+        if (saved && typeof saved === "object") return saved;
+      } catch {}
+      return recommendedSelections();
+    }
+
+    function recommendedSelections() {
+      const picked = {};
+      for (const e of events) {
+        if (e.recommended) picked[e.row] = e.id;
+      }
+      return picked;
+    }
+
+    function saveSelections() {
+      localStorage.setItem(storageKey, JSON.stringify(selections));
+    }
+
+    function trackToColumn(track) {
+      if (track === "Shared") return "Hallway";
+      return track;
+    }
+
+    function render() {
+      const schedule = document.getElementById("schedule");
+      schedule.querySelectorAll(".row-time, .slot").forEach(el => el.remove());
+
+      for (const row of rowOrder) {
+        const rowEvents = events.filter(e => e.row === row);
+        const timeCell = document.createElement("div");
+        timeCell.className = "row-time";
+        timeCell.textContent = row;
+        schedule.appendChild(timeCell);
+
+        for (const col of columns) {
+          const slot = document.createElement("div");
+          slot.className = "slot";
+          slot.dataset.label = col === "Hallway" ? "Hallway / Shared" : col;
+          const e = rowEvents.find(ev => trackToColumn(ev.track) === col);
+          if (!e) {
+            slot.classList.add("empty");
+            slot.innerHTML = "<span class='chip'>—</span>";
+          } else {
+            slot.appendChild(eventCard(e, rowEvents));
+          }
+          schedule.appendChild(slot);
+        }
+      }
+
+      renderSummary();
+    }
+
+    function eventCard(e, rowEvents) {
+      const el = document.createElement("article");
+      el.className = "event" + (e.shared ? " shared" : "");
+      el.dataset.id = e.id;
+      el.dataset.track = e.track;
+      el.setAttribute("role", "button");
+      el.setAttribute("tabindex", "0");
+      el.setAttribute("aria-label", `${e.title}. Click to ${selections[e.row] === e.id ? "unselect" : "select"}.`);
+      const selectedId = selections[e.row];
+      const isSelected = selectedId === e.id;
+      if (isSelected) el.classList.add("selected");
+      if (selectedId && selectedId !== e.id && rowEvents.length > 1) el.classList.add("faded");
+      el.innerHTML = `
+        <button class="details-btn" type="button" aria-label="Show details for ${escapeHtml(e.title)}">i</button>
+        <div class="meta">
+          <span class="track-dot">${escapeHtml(e.track)}</span>
+          <span>${escapeHtml(e.time)}–${escapeHtml(e.end)}</span>
+        </div>
+        <div class="title">${escapeHtml(e.title)}</div>
+        ${e.speaker ? `<div class="speaker">${escapeHtml(e.speaker)}</div>` : ""}
+        <div class="location">${escapeHtml(e.location)}</div>
+        ${e.why ? `<div class="why">${escapeHtml(e.why)}</div>` : ""}
+        <span class="tick">Selected · click again to unselect</span>
+      `;
+      el.addEventListener("click", () => toggleSelection(e));
+      el.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          toggleSelection(e);
+        }
+      });
+      el.querySelector(".details-btn").addEventListener("click", (event) => {
+        event.stopPropagation();
+        openDetails(e.id);
+      });
+      return el;
+    }
+
+    function toggleSelection(e) {
+      if (selections[e.row] === e.id) {
+        delete selections[e.row];
+      } else {
+        selections[e.row] = e.id;
+      }
+      saveSelections();
+      render();
+    }
+
+    function selectedEvents() {
+      return rowOrder
+        .map(row => eventById[selections[row]])
+        .filter(Boolean)
+        .sort((a, b) => minutes(a.time) - minutes(b.time));
+    }
+
+    function findConflicts(selected) {
+      const conflicts = [];
+      for (let i = 0; i < selected.length; i++) {
+        for (let j = i + 1; j < selected.length; j++) {
+          const a = selected[i], b = selected[j];
+          if (minutes(a.end) > minutes(b.time) && minutes(a.time) < minutes(b.end)) {
+            // Ignore shared long blocks if the selected talk is intended to occur within lunch/break.
+            if (a.shared || b.shared) continue;
+            conflicts.push([a, b]);
+          }
+        }
+      }
+      return conflicts;
+    }
+
+    function renderSummary() {
+      const list = document.getElementById("summaryList");
+      const selected = selectedEvents();
+      const conflicts = findConflicts(selected);
+
+      document.querySelectorAll(".event").forEach(card => card.classList.remove("conflicting"));
+      for (const [a, b] of conflicts) {
+        document.querySelector(`[data-id="${a.id}"]`)?.classList.add("conflicting");
+        document.querySelector(`[data-id="${b.id}"]`)?.classList.add("conflicting");
+      }
+
+      const conflictBox = document.getElementById("conflicts");
+      if (conflicts.length) {
+        conflictBox.classList.add("show");
+        conflictBox.innerHTML = `<strong>${conflicts.length} overlap${conflicts.length > 1 ? "s" : ""}:</strong><br>` + conflicts.map(([a,b]) =>
+          `${escapeHtml(a.time)} ${escapeHtml(a.title)} overlaps ${escapeHtml(b.time)} ${escapeHtml(b.title)}`
+        ).join("<br>");
+      } else {
+        conflictBox.classList.remove("show");
+        conflictBox.textContent = "";
+      }
+
+      if (!selected.length) {
+        list.innerHTML = `<div class="summary-item"><div class="summary-title">No sessions selected yet.</div><div class="summary-sub">Click any card in the grid to build your plan.</div></div>`;
+        return;
+      }
+
+      list.innerHTML = selected.map(e => `
+        <div class="summary-item" data-summary-id="${escapeHtml(e.id)}">
+          <button class="details-btn" type="button" aria-label="Show details for ${escapeHtml(e.title)}">i</button>
+          <div class="summary-time">${escapeHtml(e.time)}–${escapeHtml(e.end)} · ${escapeHtml(e.track)}</div>
+          <div class="summary-title">${escapeHtml(e.title)}</div>
+          <div class="summary-sub">${escapeHtml([e.speaker, e.location].filter(Boolean).join(" · "))}</div>
+        </div>
+      `).join("");
+      list.querySelectorAll(".details-btn").forEach(btn => {
+        btn.addEventListener("click", () => openDetails(btn.closest(".summary-item").dataset.summaryId));
+      });
+    }
+
+
+    function detailText(e) {
+      return e.description || e.abstract || e.summary || e.why || "Full description is loading from the public Web Directions session data. If this stays here, open the planner while online or check the source schedule for the latest details.";
+    }
+
+    function openDetails(id) {
+      const e = eventById[id];
+      if (!e) return;
+      const modal = document.getElementById("detailsModal");
+      const kicker = document.getElementById("modalKicker");
+      const title = document.getElementById("modalTitle");
+      const meta = document.getElementById("modalMeta");
+      const description = document.getElementById("modalDescription");
+      const why = document.getElementById("modalWhy");
+      const selectBtn = document.getElementById("modalSelect");
+      const unselectBtn = document.getElementById("modalUnselect");
+
+      modal.dataset.eventId = id;
+      kicker.textContent = `${e.track} · ${e.time}–${e.end}`;
+      title.textContent = e.title;
+      meta.innerHTML = `
+        ${e.speaker ? `<div><strong>Speaker:</strong> ${escapeHtml(e.speaker)}</div>` : ""}
+        <div><strong>Location:</strong> ${escapeHtml(e.location)}</div>
+      `;
+      description.textContent = detailText(e);
+
+      if (e.why) {
+        why.hidden = false;
+        why.innerHTML = `<strong>Why this was on the AI-heavy plan:</strong><br>${escapeHtml(e.why)}`;
+      } else {
+        why.hidden = true;
+        why.textContent = "";
+      }
+
+      const isSelected = selections[e.row] === e.id;
+      selectBtn.hidden = isSelected;
+      unselectBtn.hidden = !isSelected;
+      modal.hidden = false;
+      document.body.style.overflow = "hidden";
+      document.getElementById("modalClose").focus();
+    }
+
+    function closeDetails() {
+      const modal = document.getElementById("detailsModal");
+      modal.hidden = true;
+      document.body.style.overflow = "";
+      delete modal.dataset.eventId;
+    }
+
+    function selectFromModal() {
+      const id = document.getElementById("detailsModal").dataset.eventId;
+      const e = eventById[id];
+      if (!e) return;
+      selections[e.row] = e.id;
+      saveSelections();
+      render();
+      openDetails(id);
+    }
+
+    function unselectFromModal() {
+      const id = document.getElementById("detailsModal").dataset.eventId;
+      const e = eventById[id];
+      if (!e) return;
+      if (selections[e.row] === e.id) delete selections[e.row];
+      saveSelections();
+      render();
+      openDetails(id);
+    }
+
+    async function loadRemoteDescriptions() {
+      try {
+        const response = await fetch("https://data.webdirections.org/ai-engineer/sessions.json", { cache: "force-cache" });
+        if (!response.ok) return;
+        const data = await response.json();
+        const sessions = Array.isArray(data) ? data : (data.sessions || data.items || []);
+        const byTitle = new Map();
+        for (const item of sessions) {
+          const title = normaliseTitle(item.title || item.name || item.session_title || "");
+          if (!title) continue;
+          const description = stripHtml(item.description || item.abstract || item.summary || item.details || item.content || item.body || "").trim();
+          if (description) byTitle.set(title, description);
+        }
+        let changed = false;
+        for (const e of events) {
+          const description = byTitle.get(normaliseTitle(e.title));
+          if (description && !e.description) {
+            e.description = description;
+            changed = true;
+          }
+        }
+        if (changed) {
+          renderSummary();
+          const modal = document.getElementById("detailsModal");
+          if (!modal.hidden && modal.dataset.eventId) openDetails(modal.dataset.eventId);
+        }
+      } catch {}
+    }
+
+    function normaliseTitle(value) {
+      return String(value).toLowerCase().replace(/[’‘]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").trim();
+    }
+
+    function stripHtml(value) {
+      const div = document.createElement("div");
+      div.innerHTML = String(value).replace(/<br\s*\/?>/gi, "\n").replace(/<\/p>/gi, "\n\n");
+      return div.textContent || div.innerText || "";
+    }
+
+    function planText() {
+      return selectedEvents().map(e => {
+        const speaker = e.speaker ? ` — ${e.speaker}` : "";
+        return `${e.time}–${e.end} ${e.title}${speaker} (${e.location})`;
+      }).join("\n");
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    document.getElementById("recommended").addEventListener("click", () => {
+      selections = recommendedSelections();
+      saveSelections();
+      render();
+    });
+
+    document.getElementById("clear").addEventListener("click", () => {
+      selections = {};
+      saveSelections();
+      render();
+    });
+
+    document.getElementById("copy").addEventListener("click", async () => {
+      const text = planText();
+      try {
+        await navigator.clipboard.writeText(text);
+        const btn = document.getElementById("copy");
+        const old = btn.textContent;
+        btn.textContent = "Copied";
+        setTimeout(() => btn.textContent = old, 1200);
+      } catch {
+        window.prompt("Copy your plan:", text);
+      }
+    });
+
+    document.getElementById("print").addEventListener("click", () => {
+      setActiveTab("plan");
+      window.print();
+    });
+
+    function setActiveTab(name) {
+      const chooseActive = name === "choose";
+      const chooseTab = document.getElementById("chooseTab");
+      const planTab = document.getElementById("planTab");
+      const choosePanel = document.getElementById("choosePanel");
+      const planPanel = document.getElementById("planPanel");
+
+      chooseTab.classList.toggle("active", chooseActive);
+      planTab.classList.toggle("active", !chooseActive);
+      chooseTab.setAttribute("aria-selected", String(chooseActive));
+      planTab.setAttribute("aria-selected", String(!chooseActive));
+      choosePanel.hidden = !chooseActive;
+      planPanel.hidden = chooseActive;
+    }
+
+    document.getElementById("chooseTab").addEventListener("click", () => setActiveTab("choose"));
+    document.getElementById("planTab").addEventListener("click", () => setActiveTab("plan"));
+
+    document.getElementById("modalClose").addEventListener("click", closeDetails);
+    document.getElementById("detailsModal").addEventListener("click", (event) => {
+      if (event.target.id === "detailsModal") closeDetails();
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !document.getElementById("detailsModal").hidden) closeDetails();
+    });
+    document.getElementById("modalSelect").addEventListener("click", selectFromModal);
+    document.getElementById("modalUnselect").addEventListener("click", unselectFromModal);
+
+    render();
+    loadRemoteDescriptions();
+  </script>
+</body>
+</html>
